@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Detail Pasien{% endblock %}
+{% block page_subtitle %}Informasi lengkap rekam medis pasien{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Sidebar Info Pasien -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center">
+            <div class="w-24 h-24 rounded-full bg-slate-100 mx-auto flex items-center justify-center text-4xl mb-4">
+                {% if patient.gender == 'L' %}👨‍🦱{% else %}👩‍🦱{% endif %}
+            </div>
+            <h3 class="text-xl font-bold text-slate-800">{{ patient.name }}</h3>
+            <p class="text-slate-500">{{ patient.medical_record_number }}</p>
+            
+            <div class="mt-6 space-y-3 text-left">
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="text-sm text-slate-500">Usia</span>
+                    <span class="font-medium">{{ patient.birth_date|timesince }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="text-sm text-slate-500">Gender</span>
+                    <span class="font-medium">{% if patient.gender == 'L' %}Laki-laki{% else %}Perempuan{% endif %}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="text-sm text-slate-500">Telepon</span>
+                    <span class="font-medium">{{ patient.phone|default:"-" }}</span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-2 justify-center">
+                <a href="{% url 'patient-update' patient.pk %}" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">
+                    Edit Profil
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <h4 class="font-bold text-slate-800 mb-4">Alamat</h4>
+            <p class="text-slate-600 text-sm leading-relaxed">{{ patient.address }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content: Riwayat Kunjungan -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 min-h-[500px]">
+            <h3 class="font-bold text-lg text-slate-800 mb-6 flex items-center gap-2">
+                <span class="w-2 h-6 bg-teal-500 rounded-full"></span>
+                Riwayat Kunjungan
+            </h3>
+
+            <div class="space-y-6">
+                {% for reg in patient.registrations.all %}
+                <div class="relative pl-8 pb-6 border-l-2 border-slate-100 last:border-0">
+                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-white 
+                        {% if reg.status == 'completed' %}bg-emerald-500{% else %}bg-slate-300{% endif %}"></div>
+                    
+                    <div class="bg-slate-50 rounded-xl p-5 hover:bg-slate-100 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">{{ reg.created_at|date:"d M Y, H:i" }}</span>
+                                <h4 class="font-bold text-slate-800 mt-1">Kunjungan #{{ reg.id }}</h4>
+                            </div>
+                            <span class="px-2 py-1 rounded-md text-xs font-bold 
+                                {% if reg.status == 'completed' %}bg-emerald-100 text-emerald-700
+                                {% elif reg.status == 'cancelled' %}bg-red-100 text-red-700
+                                {% else %}bg-amber-100 text-amber-700{% endif %} uppercase">
+                                {{ reg.get_status_display }}
+                            </span>
+                        </div>
+
+                        {% if reg.triage %}
+                        <div class="mt-3 pt-3 border-t border-slate-200/50">
+                            <p class="text-sm text-slate-600"><span class="font-medium">Keluhan:</span> {{ reg.triage.complaint }}</p>
+                            <p class="text-sm text-slate-600 mt-1"><span class="font-medium">Poli Tujuan:</span> {{ reg.triage.referred_polyclinic.name }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if reg.examination %}
+                        <div class="mt-3 pt-3 border-t border-slate-200/50 bg-white/50 rounded-lg p-3">
+                            <p class="text-sm text-slate-800 font-medium mb-1">Diagnosis Dokter:</p>
+                            <p class="text-sm text-slate-600 italic">"{{ reg.examination.diagnosis }}"</p>
+                            
+                            {% if reg.examination.prescriptions.exists %}
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <span class="text-xs text-slate-500">Resep:</span>
+                                {% for pres in reg.examination.prescriptions.all %}
+                                <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded border border-blue-100">{{ pres.medicine.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p class="text-slate-500">Belum ada riwayat kunjungan.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

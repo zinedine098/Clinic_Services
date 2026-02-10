@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Pemeriksaan Pasien{% endblock %}
+{% block page_subtitle %}Daftar antrian pasien untuk diperiksa{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+    <div class="mb-6">
+        <h3 class="text-lg font-bold text-slate-800">Menunggu Pemeriksaan</h3>
+        <p class="text-sm text-slate-500">Pasien yang telah melalui triage dan menunggu di poli Anda</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for reg in registrations %}
+        <div class="group bg-white rounded-2xl border border-slate-200 hover:border-blue-400 p-6 transition-all hover:shadow-lg hover:shadow-blue-500/10 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-3">
+                <span class="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">#{{ reg.queue_number }}</span>
+            </div>
+
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl shadow-sm">
+                    {% if reg.patient.gender == 'L' %}👨{% else %}👩{% endif %}
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 text-lg leading-tight">{{ reg.patient.name }}</h4>
+                    <p class="text-xs text-slate-500 font-medium">{{ reg.patient.birth_date|timesince }}</p>
+                </div>
+            </div>
+
+            {% if reg.triage %}
+            <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100/50">
+                <p class="text-xs text-slate-400 uppercase font-bold mb-1">Keluhan Triage</p>
+                <p class="text-sm text-slate-700 line-clamp-2">{{ reg.triage.complaint }}</p>
+                <div class="mt-2 flex gap-3 text-xs text-slate-500">
+                    <span>BP: <b>{{ reg.triage.blood_pressure }}</b></span>
+                    <span>Temp: <b>{{ reg.triage.temperature }}°C</b></span>
+                </div>
+            </div>
+            {% endif %}
+            
+            <a href="{% url 'examination-create' reg.pk %}" class="block w-full py-3 bg-blue-600 text-white font-medium text-center rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20">
+                Periksa Pasien
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-16">
+            <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-300">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800">Tidak Ada Antrian</h3>
+            <p class="text-slate-500">Saat ini belum ada pasien yang menunggu pemeriksaan.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

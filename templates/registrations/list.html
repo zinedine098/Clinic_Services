@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Pendaftaran{% endblock %}
+{% block page_subtitle %}Kelola antrian pendaftaran pasien{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <form method="get" class="flex items-center gap-2 flex-wrap md:flex-nowrap w-full md:w-auto">
+            <div class="relative w-full md:w-64">
+                <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Cari Pasien..." 
+                    class="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            
+            <select name="status" class="w-full md:w-48 px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 transition-all text-slate-600 bg-white">
+                <option value="">Semua Status</option>
+                <option value="waiting_triage" {% if request.GET.status == 'waiting_triage' %}selected{% endif %}>Menunggu Triage</option>
+                <option value="in_triage" {% if request.GET.status == 'in_triage' %}selected{% endif %}>Sedang Triage</option>
+                <option value="waiting_exam" {% if request.GET.status == 'waiting_exam' %}selected{% endif %}>Menunggu Dokter</option>
+                <option value="waiting_pharmacy" {% if request.GET.status == 'waiting_pharmacy' %}selected{% endif %}>Menunggu Farmasi</option>
+                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Selesai</option>
+            </select>
+            
+            <button type="submit" class="w-full md:w-auto px-4 py-2 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-colors">
+                Filter
+            </button>
+        </form>
+
+        {% if user.role == "loket" or user.role == "admin" %}
+        <a href="{% url 'registration-create' %}" class="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors shadow-lg shadow-teal-500/30">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Registrasi Baru
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-slate-100">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 font-semibold uppercase text-xs">
+                <tr>
+                    <th class="px-6 py-4">Antrian</th>
+                    <th class="px-6 py-4">Waktu</th>
+                    <th class="px-6 py-4">Pasien</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4">Poli Tujuan</th>
+                    <th class="px-6 py-4 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for reg in registrations %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full font-bold
+                            {% if reg.status == 'waiting_triage' %}bg-amber-100 text-amber-700
+                            {% elif reg.status == 'completed' %}bg-emerald-100 text-emerald-700
+                            {% else %}bg-blue-100 text-blue-700{% endif %}">
+                            {{ reg.queue_number }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-xs">{{ reg.created_at|date:"H:i" }}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-slate-800">{{ reg.patient.name }}</div>
+                        <div class="text-xs text-slate-400">RM: {{ reg.patient.medical_record_number }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-md text-xs font-bold uppercase
+                            {% if reg.status == 'waiting_triage' %}bg-amber-50 text-amber-600 border border-amber-100
+                            {% elif reg.status == 'completed' %}bg-emerald-50 text-emerald-600 border border-emerald-100
+                            {% elif reg.status == 'cancelled' %}bg-red-50 text-red-600 border border-red-100
+                            {% else %}bg-blue-50 text-blue-600 border border-blue-100{% endif %}">
+                            {{ reg.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if reg.triage %}
+                            {{ reg.triage.referred_polyclinic.name }}
+                        {% else %}
+                            <span class="text-slate-400 italic text-xs">Belum Triage</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <a href="{% url 'registration-detail' reg.pk %}" class="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all" title="Detail">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </a>
+                            
+                            {% if reg.status != 'completed' and reg.status != 'cancelled' and user.role == "loket" %}
+                            <form action="{% url 'registration-cancel' reg.pk %}" method="post" onsubmit="return confirm('Batalkan registrasi ini?');">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Batalkan">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-slate-500 italic bg-slate-50/50 rounded-lg">
+                        Tidak ada antrian saat ini.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

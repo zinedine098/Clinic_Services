@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+    <!-- Background decorations -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
+
+    <div class="w-full max-w-md p-8 relative z-10">
+        <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/20 animate-fade-in-up">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-500 shadow-lg shadow-teal-500/30 mb-6 group hover:scale-110 transition-transform duration-300">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-2 tracking-tight">Klinik Sehat</h2>
+                <p class="text-slate-400">Silakan login untuk mengakses sistem</p>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="p-4 bg-red-400/20 border border-red-500/50 rounded-xl text-red-200 text-sm animate-shake">
+                    {{ form.non_field_errors.0 }}
+                </div>
+                {% endif %}
+
+                <div>
+                    {{ form.username }}
+                </div>
+
+                <div>
+                    {{ form.password }}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-3.5 px-4 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-white rounded-xl font-semibold shadow-lg shadow-teal-500/30 transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-slate-800">
+                        Masuk Sistem
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-8 text-center">
+                <p class="text-slate-500 text-sm">© 2026 Klinik Sehat Management System</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

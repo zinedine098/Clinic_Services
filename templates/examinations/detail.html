@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Hasil Pemeriksaan{% endblock %}
+{% block page_subtitle %}Detail rekam medis pasien{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Header Summary -->
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">{{ examination.registration.patient.name }}</h1>
+            <p class="text-slate-500">
+                Pemeriksaan oleh <span class="font-bold text-blue-600">{{ examination.doctor.user.get_full_name }}</span> 
+                pada {{ examination.created_at|date:"d M Y, H:i" }}
+            </p>
+        </div>
+        <div class="text-right">
+             <span class="inline-block px-4 py-1.5 rounded-full text-sm font-bold uppercase mb-2
+                {% if examination.registration.status == 'completed' %}bg-emerald-100 text-emerald-700
+                {% else %}bg-blue-100 text-blue-700{% endif %}">
+                {{ examination.registration.get_status_display }}
+            </span>
+            <p class="text-xs text-slate-400">ID: #{{ examination.id }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Diagnosis -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 md:col-span-2">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </span>
+                Diagnosis & Catatan Medis
+            </h3>
+            <div class="space-y-6">
+                <div>
+                    <span class="block text-xs font-bold text-slate-400 uppercase mb-1">Diagnosis Utama</span>
+                    <p class="text-lg text-slate-800 font-medium">{{ examination.diagnosis }}</p>
+                </div>
+                {% if examination.treatment %}
+                <div class="bg-slate-50 p-4 rounded-xl">
+                    <span class="block text-xs font-bold text-slate-400 uppercase mb-1">Tindakan Medis</span>
+                    <p class="text-slate-700">{{ examination.treatment }}</p>
+                </div>
+                {% endif %}
+                {% if examination.notes %}
+                <div>
+                    <span class="block text-xs font-bold text-slate-400 uppercase mb-1">Catatan Tambahan</span>
+                    <p class="text-slate-600 italic">"{{ examination.notes }}"</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Prescriptions -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 md:col-span-2">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                </span>
+                Resep Obat
+            </h3>
+            
+            {% if examination.prescriptions.exists %}
+            <div class="overflow-hidden rounded-xl border border-slate-100">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                        <tr>
+                            <th class="px-5 py-3">Nama Obat</th>
+                            <th class="px-5 py-3">Dosis</th>
+                            <th class="px-5 py-3">Jumlah</th>
+                            <th class="px-5 py-3">Instruksi</th>
+                            <th class="px-5 py-3 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for pres in examination.prescriptions.all %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-5 py-3 font-medium text-slate-800">{{ pres.medicine.name }}</td>
+                            <td class="px-5 py-3">{{ pres.dosage }}</td>
+                            <td class="px-5 py-3">{{ pres.quantity }}</td>
+                            <td class="px-5 py-3 text-slate-500 italic">{{ pres.instructions|default:"-" }}</td>
+                            <td class="px-5 py-3 text-center">
+                                {% if pres.is_dispensed %}
+                                <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-bold">DISERAHKAN</span>
+                                {% else %}
+                                <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">MENUNGGU</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-slate-500 italic text-center py-4">Tidak ada resep obat.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="flex justify-end pt-4">
+        <a href="{% url 'examination-list' %}" class="px-6 py-2.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl font-bold transition-colors">
+            Kembali ke Daftar
+        </a>
+    </div>
+</div>
+{% endblock %}

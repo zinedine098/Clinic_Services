@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Detail Registrasi{% endblock %}
+{% block page_subtitle %}Status dan riwayat proses pasien{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Info Pasien & Antrian -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-emerald-500"></div>
+            
+            <p class="text-slate-500 text-sm font-medium uppercase tracking-wider mb-2">Nomor Antrian</p>
+            <h1 class="text-6xl font-black text-slate-800 mb-4">{{ registration.queue_number }}</h1>
+            
+            <span class="px-4 py-1.5 rounded-full text-sm font-bold uppercase
+                {% if registration.status == 'waiting_triage' %}bg-amber-100 text-amber-700
+                {% elif registration.status == 'completed' %}bg-emerald-100 text-emerald-700
+                {% elif registration.status == 'cancelled' %}bg-red-100 text-red-700
+                {% else %}bg-blue-100 text-blue-700{% endif %}">
+                {{ registration.get_status_display }}
+            </span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <h4 class="font-bold text-slate-800 mb-4">Identitas Pasien</h4>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-xs text-slate-500 uppercase">Nama Lengkap</p>
+                    <p class="font-medium text-slate-800">{{ registration.patient.name }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 uppercase">No. RM</p>
+                    <p class="font-medium text-slate-800">{{ registration.patient.medical_record_number }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 uppercase">Usia</p>
+                    <p class="font-medium text-slate-800">{{ registration.patient.birth_date|timesince }}</p>
+                </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100">
+                <a href="{% url 'patient-detail' registration.patient.pk %}" class="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center justify-center gap-2">
+                    Lihat Profil Pasien
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline Proses -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- 1. Triage Info -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 opacity-{% if registration.triage %}100{% else %}50{% endif %}">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-sm font-bold">1</span>
+                    Triage UGD
+                </h3>
+                {% if registration.triage %}
+                <span class="text-xs text-slate-400">{{ registration.triage.created_at|date:"H:i" }}</span>
+                {% endif %}
+            </div>
+            
+            {% if registration.triage %}
+            <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl">
+                <div>
+                    <p class="text-xs text-slate-500">Keluhan</p>
+                    <p class="font-medium text-slate-800">{{ registration.triage.complaint }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">Poli Tujuan</p>
+                    <p class="font-bold text-teal-600">{{ registration.triage.referred_polyclinic.name }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">Tekanan Darah</p>
+                    <p class="font-medium text-slate-800">{{ registration.triage.blood_pressure|default:"-" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">Suhu</p>
+                    <p class="font-medium text-slate-800">{{ registration.triage.temperature|default:"-" }} °C</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <p class="text-slate-400 text-sm">Belum ada data Triage</p>
+                {% if user.role == 'ugd' or user.role == 'admin' %}
+                <a href="{% url 'triage-create' registration.pk %}" class="mt-2 inline-block px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors">
+                    Input Triage
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 2. Pemeriksaan Dokter -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 opacity-{% if registration.examination %}100{% else %}50{% endif %}">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">2</span>
+                    Pemeriksaan Dokter
+                </h3>
+            </div>
+
+            {% if registration.examination %}
+            <div class="bg-slate-50 p-4 rounded-xl space-y-4">
+                <div>
+                    <p class="text-xs text-slate-500">Dokter Pemeriksa</p>
+                    <p class="font-bold text-slate-800">{{ registration.examination.doctor }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">Diagnosis</p>
+                    <p class="font-medium text-slate-800 bg-white p-3 rounded-lg border border-slate-200 mt-1">{{ registration.examination.diagnosis }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">Catatan / Tindakan</p>
+                    <p class="text-slate-600 text-sm mt-1">{{ registration.examination.notes }}</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <p class="text-slate-400 text-sm">Menunggu Pemeriksaan Dokter</p>
+                {% if registration.status == 'waiting_exam' and (user.role == 'dokter' or user.role == 'admin') %}
+                <a href="{% url 'examination-create' registration.pk %}" class="mt-2 inline-block px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors">
+                    Mulai Periksa
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 3. Farmasi -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 opacity-{% if registration.status == 'completed' %}100{% else %}50{% endif %}">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm font-bold">3</span>
+                    Farmasi & Obat
+                </h3>
+            </div>
+
+            {% if registration.examination and registration.examination.prescriptions.exists %}
+            <div class="bg-slate-50 p-4 rounded-xl">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-slate-500 uppercase border-b border-slate-200">
+                        <tr>
+                            <th class="py-2">Obat</th>
+                            <th class="py-2">Dosis</th>
+                            <th class="py-2">Jumlah</th>
+                            <th class="py-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200/50">
+                        {% for pres in registration.examination.prescriptions.all %}
+                        <tr>
+                            <td class="py-2 font-medium">{{ pres.medicine.name }}</td>
+                            <td class="py-2">{{ pres.dosage }}</td>
+                            <td class="py-2">{{ pres.quantity }}</td>
+                            <td class="py-2">
+                                {% if pres.is_dispensed %}
+                                <span class="text-emerald-600 font-bold text-xs">✔ Diambil</span>
+                                {% else %}
+                                <span class="text-amber-600 font-bold text-xs">⏳ Menunggu</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <p class="text-slate-400 text-sm">Belum ada resep / Menunggu proses sebelumnya</p>
+                {% if registration.status == 'waiting_pharmacy' and (user.role == 'farmasi' or user.role == 'admin') %}
+                <a href="{% url 'pharmacy-dispense' registration.pk %}" class="mt-2 inline-block px-4 py-2 bg-emerald-500 text-white text-sm rounded-lg hover:bg-emerald-600 transition-colors">
+                    Proses Obat
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

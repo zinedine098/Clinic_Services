@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Overview aktivitas klinik hari ini{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Pasien -->
+    <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Total Pasien</p>
+            <h3 class="text-3xl font-bold text-slate-800">{{ total_patients }}</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+    </div>
+
+    <!-- Registrasi Hari Ini -->
+    <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Registrasi Hari Ini</p>
+            <h3 class="text-3xl font-bold text-teal-600">{{ today_registrations }}</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+    </div>
+
+    <!-- Antrian Triage -->
+    <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Menunggu Triage</p>
+            <h3 class="text-3xl font-bold text-amber-600">{{ waiting_triage }}</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+    </div>
+
+    <!-- Selesai -->
+    <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-slate-500 mb-1">Selesai Hari Ini</p>
+            <h3 class="text-3xl font-bold text-emerald-600">{{ completed_today }}</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Antrian Status -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 h-full">
+        <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <span class="w-2 h-6 bg-teal-500 rounded-full"></span>
+            Status Antrian Real-time
+        </h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold">1</div>
+                    <span class="font-medium text-slate-700">Menunggu Triage</span>
+                </div>
+                <span class="text-lg font-bold text-amber-600">{{ waiting_triage }} Pasien</span>
+            </div>
+            
+            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">2</div>
+                    <span class="font-medium text-slate-700">Menunggu Pemeriksaan</span>
+                </div>
+                <span class="text-lg font-bold text-blue-600">{{ waiting_exam }} Pasien</span>
+            </div>
+
+            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">3</div>
+                    <span class="font-medium text-slate-700">Menunggu Farmasi</span>
+                </div>
+                <span class="text-lg font-bold text-indigo-600">{{ waiting_pharmacy }} Pasien</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stok Obat Kritis -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 h-full">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <span class="w-2 h-6 bg-red-500 rounded-full"></span>
+                Stok Obat Menipis
+            </h3>
+            <span class="px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full">{{ low_stock_medicines }} Item</span>
+        </div>
+        
+        {% if low_stock_medicines > 0 %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                    <tr>
+                        <th class="px-4 py-3 rounded-l-lg">Nama Obat</th>
+                        <th class="px-4 py-3">Stok</th>
+                        <th class="px-4 py-3 rounded-r-lg">Satuan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <!-- Logic to display actual low stock medicines would go here if passed in context -->
+                    <tr>
+                        <td colspan="3" class="px-4 py-4 text-center text-slate-500 italic">Data detail stok kritis bisa dilihat di menu Farmasi</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="flex flex-col items-center justify-center h-40 text-center">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <p class="text-slate-600 font-medium">Stok obat aman</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

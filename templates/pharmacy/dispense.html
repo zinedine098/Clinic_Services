@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Penyerahan Obat{% endblock %}
+{% block page_subtitle %}Konfirmasi pengambilan obat untuk <span class="font-bold text-emerald-600">{{ registration.patient.name }}</span>{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Patient Summary -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <h3 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Info Pasien</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">No. RM</span>
+                    <span class="font-medium">{{ registration.patient.medical_record_number }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Usia</span>
+                    <span class="font-medium">{{ registration.patient.birth_date|timesince }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Dokter</span>
+                    <span class="font-medium">{{ registration.examination.doctor.user.get_full_name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+            <h3 class="font-bold text-blue-800 mb-2">Catatan Dokter</h3>
+            <p class="text-blue-900 text-sm italic">"{{ registration.examination.notes|default:'-' }}"</p>
+        </div>
+    </div>
+
+    <!-- Prescription List -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </span>
+                Daftar Obat Resep
+            </h3>
+
+            <div class="space-y-4 mb-8">
+                {% for pres in prescriptions %}
+                <div class="p-4 rounded-xl border {% if pres.medicine.stock < pres.quantity %}border-red-200 bg-red-50{% else %}border-slate-200 bg-slate-50{% endif %}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-lg">{{ pres.medicine.name }}</h4>
+                            <p class="text-sm text-slate-600">{{ pres.dosage }} • <span class="font-mono bg-white px-2 rounded border border-slate-200">{{ pres.quantity }} {{ pres.medicine.unit }}</span></p>
+                            {% if pres.instructions %}
+                            <p class="text-xs text-slate-500 mt-1 italic">Note: {{ pres.instructions }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="text-right">
+                           {% if pres.medicine.stock < pres.quantity %}
+                           <span class="text-red-600 font-bold text-xs uppercase block mb-1">Stok Kurang ({{ pres.medicine.stock }})</span>
+                           {% else %}
+                           <span class="text-emerald-600 font-bold text-xs uppercase block mb-1">Stok Tersedia</span>
+                           {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form method="post" onsubmit="return confirm('PENTING: Stok akan otomatis dikurangi. Lanjutkan?');">
+                {% csrf_token %}
+                <input type="hidden" name="confirm" value="true">
+                
+                <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                    <a href="{% url 'pharmacy-queue' %}" class="px-6 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-slate-200 font-bold transition-colors">
+                        Kembali
+                    </a>
+                    <button type="submit" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Serahkan Obat & Selesai
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

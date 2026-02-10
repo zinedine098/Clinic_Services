@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Detail Triage{% endblock %}
+{% block page_subtitle %}Hasil pemeriksaan UGD{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+    <!-- Header Patient -->
+    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-3xl">
+            {% if triage.registration.patient.gender == 'L' %}👨{% else %}👩{% endif %}
+        </div>
+        <div>
+            <h2 class="text-2xl font-bold text-slate-800">{{ triage.registration.patient.name }}</h2>
+            <p class="text-slate-500">RM: {{ triage.registration.patient.medical_record_number }}</p>
+        </div>
+        <div class="ml-auto text-right">
+            <span class="block text-sm text-slate-400">Tingkat Urgensi</span>
+            <span class="inline-block px-3 py-1 rounded-full text-sm font-bold uppercase
+                {% if triage.urgency_level == 'critical' %}bg-red-100 text-red-700
+                {% elif triage.urgency_level == 'high' %}bg-orange-100 text-orange-700
+                {% elif triage.urgency_level == 'medium' %}bg-yellow-100 text-yellow-700
+                {% else %}bg-green-100 text-green-700{% endif %}">
+                {{ triage.get_urgency_level_display }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Vital Signs Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-slate-50 p-4 rounded-xl text-center">
+            <span class="block text-xs text-slate-400 uppercase font-bold mb-1">Tekanan Darah</span>
+            <span class="text-xl font-bold text-slate-700">{{ triage.blood_pressure|default:"-" }}</span>
+            <span class="text-xs text-slate-400">mmHg</span>
+        </div>
+         <div class="bg-slate-50 p-4 rounded-xl text-center">
+            <span class="block text-xs text-slate-400 uppercase font-bold mb-1">Suhu Tubuh</span>
+            <span class="text-xl font-bold text-slate-700">{{ triage.temperature|default:"-" }}</span>
+            <span class="text-xs text-slate-400">°C</span>
+        </div>
+         <div class="bg-slate-50 p-4 rounded-xl text-center">
+            <span class="block text-xs text-slate-400 uppercase font-bold mb-1">Detak Jantung</span>
+            <span class="text-xl font-bold text-slate-700">{{ triage.heart_rate|default:"-" }}</span>
+            <span class="text-xs text-slate-400">bpm</span>
+        </div>
+    </div>
+
+    <!-- Complaints & Referral -->
+    <div class="space-y-6">
+        <div>
+            <h4 class="font-bold text-slate-800 mb-2">Keluhan Utama</h4>
+            <p class="text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100">{{ triage.complaint }}</p>
+        </div>
+        
+        <div>
+            <h4 class="font-bold text-slate-800 mb-2">Poli Rujukan</h4>
+            <div class="flex items-center gap-3 bg-teal-50 p-4 rounded-xl border border-teal-100">
+                <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </div>
+                <div>
+                    <p class="font-bold text-teal-800">{{ triage.referred_polyclinic.name }}</p>
+                    <p class="text-xs text-teal-600">Assessed by: {{ triage.assessed_by.get_full_name|default:triage.assessed_by.username }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+        <a href="{% url 'triage-list' %}" class="px-5 py-2 text-slate-600 hover:text-slate-800 font-medium">Kembali</a>
+    </div>
+</div>
+{% endblock %}
